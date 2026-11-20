@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: fct_taxi_trips
+    description: "Clean trip-level fact table partitioned by trip_start_date and clustered by payment_type, company_name, and pickup_community_area for BigQuery cost efficiency and Looker Studio reporting."
+    columns:
+      - name: trip_id
+        description: "Primary key representing a single taxi trip."
+        tests:
+          - not_null
+          - unique
+      - name: taxi_id
+        description: "Identifier for the taxi serving the trip."
+        tests:
+          - not_null
+      - name: trip_start_date
+        description: "Partition date for the trip."
+        tests:
+          - not_null
+      - name: payment_type
+        description: "Payment method used for the trip."
+        tests:
+          - not_null
+      - name: company_name
+        description: "Taxi company operating the vehicle."
+        tests:
+          - not_null
+      - name: trip_total_usd
+        description: "Total trip charge in USD."
+        tests:
+          - not_null
