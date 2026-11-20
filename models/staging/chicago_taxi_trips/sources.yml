@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: chicago_taxi_trips
+    database: bigquery-public-data
+    schema: chicago_taxi_trips
+    description: "Official public taxi trip records from the city of Chicago."
+    tables:
+      - name: taxi_trips
+        description: "Individual taxi trips, with timestamps rounded to 15-minute intervals and privacy masking on select location fields."
+        columns:
+          - name: unique_key
+            description: "Unique identifier for each taxi trip."
+            tests:
+              - not_null
+              - unique
+          - name: taxi_id
+            description: "Unique identifier for the taxi vehicle."
+            tests:
+              - not_null
+          - name: trip_start_timestamp
+            description: "Trip start timestamp rounded to the nearest 15 minutes."
+          - name: trip_end_timestamp
+            description: "Trip end timestamp rounded to the nearest 15 minutes."
+          - name: trip_total
+            description: "Total trip charge including fare, tips, tolls, and extras."
