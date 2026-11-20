@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: stg_chicago_taxi__trips
+    description: "Staged Chicago taxi trip records with standardized naming, explicit BigQuery types, derived trip_start_date, and basic null key filtering."
+    columns:
+      - name: trip_id
+        description: "Unique trip identifier mapped from unique_key."
+        tests:
+          - not_null
+          - unique
+      - name: taxi_id
+        description: "Unique taxi identifier."
+        tests:
+          - not_null
+      - name: trip_start_at
+        description: "Trip start timestamp."
+        tests:
+          - not_null
+      - name: trip_start_date
+        description: "Date extracted from trip_start_timestamp."
+        tests:
+          - not_null
+      - name: trip_total_usd
+        description: "Total trip amount in USD."
