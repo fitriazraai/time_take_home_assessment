@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: int_taxi_trips__enriched
+    description: "Intermediate trip model adding duration in minutes, average speed, tip-to-fare ratio, time-of-day parts, fallback categorical labels, and basic anomaly flags."
+    columns:
+      - name: trip_id
+        description: "Unique trip identifier inherited from staging."
+        tests:
+          - not_null
+          - unique
+      - name: trip_start_date
+        description: "Date of trip start in UTC/BigQuery timestamp basis, used downstream for partitioning."
+        tests:
+          - not_null
+      - name: trip_minutes
+        description: "Trip duration converted from seconds to minutes."
+      - name: avg_speed_mph
+        description: "Average trip speed in miles per hour when trip duration is positive."
+      - name: tip_to_fare_ratio
+        description: "Recorded tips divided by fare when fare is greater than zero; excludes unrecorded cash tips."
+      - name: payment_type
+        description: "Standardized payment method with 'UNKNOWN' fallback."
+        tests:
+          - not_null
+      - name: company_name
+        description: "Taxi company name with 'UNKNOWN' fallback."
+        tests:
+          - not_null
+      - name: is_anomalous_trip
+        description: "Boolean flag marking negative durations, distances, totals, or end timestamps earlier than start timestamps."
+        tests:
+          - not_null
