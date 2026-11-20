@@ -1,0 +1,36 @@
+name: 'chicago_taxi_dbt'
+version: '1.0.0'
+config-version: 2
+
+profile: 'chicago_taxi_bigquery'
+
+# Folder paths relative to the repository root
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Layer defaults matching your models/ folder structure
+models:
+  chicago_taxi_dbt:
+    staging:
+      +materialized: view
+      +schema: staging
+      chicago_taxi:
+        +description: "Staging models for official public Chicago taxi trip data."
+    intermediate:
+      +materialized: ephemeral
+      +schema: intermediate
+      taxi_trips:
+        +description: "Intermediate transformations, derived trip metrics, and quality checks."
+    marts:
+      +materialized: table
+      +schema: marts
+      taxi_trips:
+        +description: "Analytics-ready mart tables for BigQuery and Looker Studio."
