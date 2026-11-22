@@ -13,7 +13,7 @@ models:
         description: "Unique taxi identifier."
         tests:
           - not_null
-      - name: trip_start_at
+      - name: trip_start_timestamp
         description: "Trip start timestamp."
         tests:
           - not_null
