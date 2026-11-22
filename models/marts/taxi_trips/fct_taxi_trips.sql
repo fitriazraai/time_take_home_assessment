@@ -25,6 +25,8 @@ select
     trip_start_date,
     trip_start_hour,
     trip_start_day_of_week,
+    trip_day_of_week_mon_first,
+    trip_day_name,
     payment_type,
     company_name,
     pickup_community_area,
