@@ -2,17 +2,13 @@
 
 ## 1. Overview & Objective
 
-This repository outlines an end-to-end analytics engineering pipeline built with **dbt (Data Build Tool)** and **Google BigQuery**, transforming the public `bigquery-public-data.chicago_taxi_trips.taxi_trips` dataset into an analytics-ready data model designed for downstream visualization in **Looker Studio**.
+This repository implements an end-to-end analytics engineering pipeline using **dbt** and **Google BigQuery** on the public `bigquery-public-data.chicago_taxi_trips.taxi_trips` dataset, structured to feed downstream BI reporting in **Looker Studio**.
 
-Because the source dataset already resides in BigQuery rather than arriving via raw API ingestion, this architecture focuses on **modular SQL transformations, BigQuery query cost optimization (partitioning and clustering), explicit data quality testing, and clear business grain definitions**.
-
-> **Project Scope Note:** This repository represents the architectural design, SQL transformation logic, YAML schema documentation, and test suite prepared for execution against BigQuery and Looker Studio.
+Because the raw data already lives in BigQuery, the pipeline prioritizes **modular SQL transformations, BigQuery scan-cost reduction via partitioning and clustering, explicit data quality tests, and clear model grain definitions**—supporting analyses such as tip and tip-per-hour performance, daily/weekly trip patterns (with Monday-first ordering), and daily shifts exceeding 16 active trip hours (`> 57,600` seconds).
 
 ---
 
-## 2. Data Architecture & Layering Strategy
-
-Even though `taxi_trips` is a single source table at the trip grain (`unique_key`), separating transformations into **Staging → Intermediate → Marts** ensures clear lineage, prevents duplicated business logic, and keeps downstream BI queries fast and predictable.
+## 2. Medallion Architecture & Materializations
 
 ```text
 ┌──────────────────────────────────────────────────────────┐
@@ -23,30 +19,31 @@ Even though `taxi_trips` is a single source table at the trip grain (`unique_key
                              ▼
 ┌──────────────────────────────────────────────────────────┐
 │ Staging Layer (Materialized: View)                       │
-│ stg_chicago_taxi__trips                                  │
+│ models/staging/chicago_taxi_trips/stg_chicago_taxi__trips│
 │ • Type casting, snake_case renaming, date extraction     │
-│ • Filters out null primary keys / start timestamps       │
+│ • Filters out null primary keys, start timestamps, & cabs │
 └────────────────────────────┬─────────────────────────────┘
                              │
                              ▼
 ┌──────────────────────────────────────────────────────────┐
 │ Intermediate Layer (Materialized: Ephemeral)             │
-│ int_taxi_trips__enriched                                 │
+│ models/intermediate/taxi_trips/int_taxi_trips__enriched  │
 │ • Derived metrics: trip_minutes, avg_speed_mph,          │
-│   tip_to_fare_ratio, hour/day-of-week parts              │
-│ • Standardized fallbacks ('UNKNOWN') & anomaly flags     │
+│   tip_to_fare_ratio, hour & Monday-first weekday fields  │
+│ • 'UNKNOWN' fallbacks & anomaly flags (is_anomalous_trip)│
 └────────────────────────────┬─────────────────────────────┘
                              │
-                             ▼
-┌──────────────────────────────────────────────────────────┐
-│ Marts Layer (Materialized: Partitioned & Clustered Table)│
-│ fct_taxi_trips                                           │
-│ • Partitioned by trip_start_date (DAY)                   │
-│ • Clustered by payment_type, company_name,               │
-│   pickup_community_area                                  │
-│ • Excludes anomalous trip records                        │
-└────────────────────────────┬─────────────────────────────┘
-                             │
+              ┌──────────────┴──────────────┐
+              ▼                             ▼
+┌───────────────────────────┐ ┌────────────────────────────┐
+│ Marts: fct_taxi_trips     │ │ Marts: mrt_daily_taxi      │
+│ (Table, partitioned &     │ │ (Table, partitioned &      │
+│  clustered)               │ │  clustered)                │
+│ • Grain: 1 row per trip   │ │ • Grain: 1 row per         │
+│ • Excludes anomalous rows │ │   taxi_id + trip_start_date│
+└─────────────┬─────────────┘ └──────────────┬─────────────┘
+              │                              │
+              └──────────────┬───────────────┘
                              ▼
 ┌──────────────────────────────────────────────────────────┐
 │ BI / Visualization Layer                                 │
