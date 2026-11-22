@@ -4,7 +4,6 @@ config-version: 2
 
 profile: 'chicago_taxi_bigquery'
 
-# Folder paths relative to the repository root
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
@@ -16,13 +15,12 @@ clean-targets:
   - "target"
   - "dbt_packages"
 
-# Layer defaults matching your models/ folder structure
 models:
   chicago_taxi_dbt:
     staging:
       +materialized: view
       +schema: staging
-      taxi_trips:
+      chicago_taxi_trips:
         +description: "Staging models for official public Chicago taxi trip data."
     intermediate:
       +materialized: ephemeral
