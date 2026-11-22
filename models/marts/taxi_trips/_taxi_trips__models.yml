@@ -46,7 +46,7 @@ models:
         tests:
           - not_null
 
-  - name: mrt_dail_taxi
+  - name: mrt_daily_taxi
     description: "Daily taxi-level mart table (grain: 1 row per taxi_id and trip_start_date) supporting top-100 cab tip/tip-per-hour rankings and overworked shift (> 16 daily trip hours) analysis."
     columns:
       - name: taxi_id
