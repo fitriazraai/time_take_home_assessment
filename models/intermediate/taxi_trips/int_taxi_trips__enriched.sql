@@ -15,12 +15,14 @@ enriched as (
         trip_start_date,
         extract(hour from trip_start_at) as trip_start_hour,
         extract(dayofweek from trip_start_at) as trip_start_day_of_week,
+        mod(extract(dayofweek from trip_start_at) + 5, 7) + 1 as trip_day_of_week_mon_first,
+        format_timestamp('%A', trip_start_at) as trip_day_name,
         coalesce(trip_seconds, 0) as trip_seconds,
         round(coalesce(trip_seconds, 0) / 60.0, 2) as trip_minutes,
         coalesce(trip_miles, 0.0) as trip_miles,
         case
-            when trip_seconds > 0 and trip_miles >= 0
-                then round(trip_miles / (trip_seconds / 3600.0), 2)
+            when coalesce(trip_seconds, 0) > 0 and coalesce(trip_miles, 0.0) >= 0
+                then round(coalesce(trip_miles, 0.0) / (coalesce(trip_seconds, 0) / 3600.0), 2)
             else null
         end as avg_speed_mph,
         pickup_census_tract,
@@ -48,9 +50,9 @@ enriched as (
         dropoff_longitude,
         dropoff_location,
         case
-            when trip_seconds < 0
-                or trip_miles < 0
-                or trip_total_usd < 0
+            when coalesce(trip_seconds, 0) < 0
+                or coalesce(trip_miles, 0.0) < 0
+                or coalesce(trip_total_usd, 0.0) < 0
                 or (trip_end_at is not null and trip_end_at < trip_start_at)
                 then true
             else false
