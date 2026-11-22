@@ -17,6 +17,22 @@ models:
         description: "Partition date for the trip."
         tests:
           - not_null
+      - name: trip_start_hour
+        description: "Hour of day (0 to 23) when the trip started."
+        tests:
+          - not_null
+      - name: trip_start_day_of_week
+        description: "BigQuery day-of-week index (1 = Sunday through 7 = Saturday) for the trip start timestamp."
+        tests:
+          - not_null
+      - name: trip_day_of_week_mon_first
+        description: "Monday-first day-of-week index (1 = Monday through 7 = Sunday) for consistent chronological sorting in Looker Studio."
+        tests:
+          - not_null
+      - name: trip_day_name
+        description: "Full weekday name (Monday through Sunday) derived from trip_start_at."
+        tests:
+          - not_null
       - name: payment_type
         description: "Payment method used for the trip."
         tests:
@@ -27,5 +43,47 @@ models:
           - not_null
       - name: trip_total_usd
         description: "Total trip charge in USD."
+        tests:
+          - not_null
+
+  - name: mrt_taxi_daily_by_cab
+    description: "Daily taxi-level mart table (grain: 1 row per taxi_id and trip_start_date) supporting top-100 cab tip/tip-per-hour rankings and overworked shift (> 16 daily trip hours) analysis."
+    columns:
+      - name: taxi_id
+        description: "Unique identifier for the taxi vehicle."
+        tests:
+          - not_null
+      - name: trip_start_date
+        description: "Daily partition date on which trips began."
+        tests:
+          - not_null
+      - name: company_name
+        description: "Taxi company associated with the vehicle on that date."
+        tests:
+          - not_null
+      - name: total_trips
+        description: "Count of distinct trips completed by the taxi on trip_start_date."
+        tests:
+          - not_null
+      - name: total_trip_seconds
+        description: "Sum of trip duration in seconds for the taxi on trip_start_date."
+        tests:
+          - not_null
+      - name: total_trip_hours
+        description: "Sum of active trip duration in hours (total_trip_seconds / 3600) for the taxi on trip_start_date."
+        tests:
+          - not_null
+      - name: total_tip_usd
+        description: "Total recorded tips in USD earned by the taxi on trip_start_date (cash tips often unrecorded in source)."
+        tests:
+          - not_null
+      - name: tip_per_trip_hour_usd
+        description: "Recorded tips divided by active trip hours (total_tip_usd / total_trip_hours) when total_trip_seconds is greater than zero."
+      - name: total_revenue_usd
+        description: "Total trip revenue (trip_total_usd) in USD for the taxi on trip_start_date."
+        tests:
+          - not_null
+      - name: is_overworked_shift
+        description: "Boolean flag indicating whether daily total trip time exceeded 16 hours (greater than 57,600 seconds)."
         tests:
           - not_null
