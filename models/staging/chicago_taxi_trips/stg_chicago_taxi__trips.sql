@@ -35,6 +35,7 @@ cleaned as (
     from source
     where unique_key is not null
       and trip_start_timestamp is not null
+      and taxi_id is not null
 
 )
 
