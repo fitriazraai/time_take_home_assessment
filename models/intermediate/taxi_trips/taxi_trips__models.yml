@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: int_taxi_trips__enriched
-    description: "Intermediate trip model adding duration in minutes, average speed, tip-to-fare ratio, time-of-day parts, fallback categorical labels, and basic anomaly flags."
+    description: "Intermediate trip model adding duration in minutes, average speed, tip-to-fare ratio, hour and Monday-first day-of-week parts, fallback categorical labels, and basic anomaly flags."
     columns:
       - name: trip_id
         description: "Unique trip identifier inherited from staging."
@@ -11,6 +11,22 @@ models:
           - unique
       - name: trip_start_date
         description: "Date of trip start in UTC/BigQuery timestamp basis, used downstream for partitioning."
+        tests:
+          - not_null
+      - name: trip_start_hour
+        description: "Hour of day (0 to 23) extracted from trip_start_at."
+        tests:
+          - not_null
+      - name: trip_start_day_of_week
+        description: "BigQuery day-of-week index (1 = Sunday through 7 = Saturday) extracted from trip_start_at."
+        tests:
+          - not_null
+      - name: trip_day_of_week_mon_first
+        description: "Monday-first day-of-week index (1 = Monday through 7 = Sunday) for chronological weekday sorting."
+        tests:
+          - not_null
+      - name: trip_day_name
+        description: "Full weekday name (Monday through Sunday) derived from trip_start_at."
         tests:
           - not_null
       - name: trip_minutes
